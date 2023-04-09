@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <math.h>
 #include <iostream>
@@ -76,10 +77,10 @@ int main(int argc, char *argv[])
     int width = 15;
 
     // header
-    ofile << std::setw(width) << std::setprecision(prec) << "t";
-    ofile << std::setw(width) << std::setprecision(prec) << "x";
-    ofile << std::setw(width) << std::setprecision(prec) << "y";
-    ofile << std::setw(width) << std::setprecision(prec) << "z";
+    ofile << std::setw(width) << std::setprecision(prec) << "t,";
+    ofile << std::setw(width) << std::setprecision(prec) << "x,";
+    ofile << std::setw(width) << std::setprecision(prec) << "y,";
+    ofile << std::setw(width) << std::setprecision(prec) << "z,";
     ofile << std::setw(width) << std::setprecision(prec) << "particle"
           << std::endl;
 
