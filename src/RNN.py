@@ -19,68 +19,106 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import SGD
 from tensorflow.random import set_seed
 
-set_seed(42)
-np.random.seed(42)
+rng = np.random.default_rng(2048)
+
 
 
 class simple_rnn():
     """
     here we implement the simple keras RNN
     """
-    model = Sequential()
-    def __init__(self, X_train, y_train, X_test, y_test, epochs, batch_size, neurons, dropout, optimizer, loss, metrics):
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_test = X_test
-        self.y_test = y_test
-        self.epochs = epochs
-        self.batch_size = batch_size
-        self.neurons = neurons
-        self.dropout = dropout
-        self.optimizer = optimizer
-        self.loss = loss
-        self.metrics = metrics
+    def __init__(self, n_hidden, n_layers, input_shape):
+        self.model = Sequential()
+        self.input_shape = input_shape
+        self.n_hidden = n_hidden
+        self.n_layers = n_layers
+        self.sequence_length = input_shape[0]
+        self.spacial_dim = input_shape[1]
 
-    def build_model(self):
-        self.model.add(SimpleRNN(self.neurons, input_shape=(self.X_train.shape[1], self.X_train.shape[2])))
-        self.model.add(Dropout(self.dropout))
-        self.model.add(Dense(1))
-        self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
-        return self.model
+    def build(self, optimizer, loss, dropout = 0):
+        
+        for _ in range(self.n_layers):
+            self.model.add(SimpleRNN(self.n_hidden, input_shape=self.input_shape))
+        #self.model.add(Dropout(dropout))
 
-    def fit_model(self):
-        self.model.fit(self.X_train, self.y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=1, shuffle=False)
-        return self.model
+        self.model.add(Dense(self.input_shape[1])) # output layer, input_shape[1] = spacial_dim
+        self.model.compile(optimizer=optimizer, loss=loss)
+    
+
+    def fit(self, X_train, y_train, epochs):
+        # add warning that batch_size is default to None
+        print("Warning: Batch size is default to None")
+
+        self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1, )
+        
+
+    def test(self, sequenced_test_inputs, seq_indx=0):
+        predicted_sequence = []
+        current_step = sequenced_test_inputs[seq_indx][0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
+        print(current_step.shape)
+        for _ in range(len(sequenced_test_inputs[0])):
+            predicted_step = self.model.predict(current_step)
+            predicted_sequence.append(predicted_step)
+            # Update the current step by shifting the window
+            current_step = np.concatenate([current_step[:, 1:, :], predicted_step.reshape(1,1, self.spacial_dim)], axis=1)
+
+        predicted_sequence = np.array(predicted_sequence)
+
+        # processed_sequence = write_result(predicted_sequence)
+        return predicted_sequence
+
+    def summary(self):
+        return self.model.summary()
+
 
 
 class lstm():
     """
     here we implement the simple keras LSTM
     """
-    model = Sequential()
-    def __init__(self, X_train, y_train, X_test, y_test, epochs, batch_size, neurons, dropout, optimizer, loss, metrics):
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_test = X_test
-        self.y_test = y_test
-        self.epochs = epochs
-        self.batch_size = batch_size
-        self.neurons = neurons
-        self.dropout = dropout
-        self.optimizer = optimizer
-        self.loss = loss
-        self.metrics = metrics
+    
+    def __init__(self, n_hidden, n_layers, input_shape):
+        self.model = Sequential()
+        self.input_shape = input_shape
+        self.n_hidden = n_hidden
+        self.n_layers = n_layers
+        self.sequence_length = input_shape[0]
+        self.spacial_dim = input_shape[1]
 
-    def build_model(self):
-        self.model.add(LSTM(self.neurons, input_shape=(self.X_train.shape[1], self.X_train.shape[2])))
-        self.model.add(Dropout(self.dropout))
-        self.model.add(Dense(1))
-        self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
-        return self.model
+    def build(self, optimizer, loss, dropout = 0):
+        
+        for _ in range(self.n_layers):
+            self.model.add(LSTM(self.n_hidden, input_shape=self.input_shape))
+        #self.model.add(Dropout(dropout))
 
-    def fit_model(self):
-        self.model.fit(self.X_train, self.y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=1, shuffle=False)
-        return self.model
+        self.model.add(Dense(self.input_shape[1])) # output layer, input_shape[1] = spacial_dim
+        self.model.compile(optimizer=optimizer, loss=loss)
+    
+
+    def fit(self, X_train, y_train, epochs):
+        # add warning that batch_size is default to None
+        print("Warning: Batch size is default to None")
+
+        self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1, )
+        
+
+    def test(self, sequenced_test_inputs, seq_indx=0):
+        predicted_sequence = []
+        current_step = sequenced_test_inputs[seq_indx][0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
+        print(current_step.shape)
+        for _ in range(len(sequenced_test_inputs[0])):
+            predicted_step = self.model.predict(current_step)
+            predicted_sequence.append(predicted_step)
+            # Update the current step by shifting the window
+            current_step = np.concatenate([current_step[:, 1:, :], predicted_step.reshape(1,1, self.spacial_dim)], axis=1)
+
+        predicted_sequence = np.array(predicted_sequence)
+
+        # processed_sequence = write_result(predicted_sequence)
+        return predicted_sequence
+
+    def summary(self):
+        return self.model.summary()
 
     
 
