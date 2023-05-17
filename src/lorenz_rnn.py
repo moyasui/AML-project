@@ -135,8 +135,8 @@ def eval_n_plot(sequenced_test_targets, pred_lstm, pred_vanilla, len_seq, n_epoc
 #     sequenced_test_targets, pred_lstm, pred_vanilla = lorenz_pred("adam", len_seq)
 #     plot_sim_lstm(sequenced_test_targets, pred_lstm, pred_vanilla)
 
-errs_lstm = np.zeros((4,4))
-errs_vanilla = np.zeros((4,4))
+errs_lstm = np.zeros((3,4))
+errs_vanilla = np.zeros((3,4))
 
 all_n_epochs = (20,150,500)
 len_seqs = range(2,6)
