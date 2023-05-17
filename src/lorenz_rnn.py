@@ -20,21 +20,30 @@ n_hidden = 32
 test_indx = 1
 test_steps = 10
 
-def rnn_alt(model, train_inputs, train_targets, n_epochs, spacial_dim, ic, len_seq, is_saving_model=False):
+def rnn_alt(my_model, train_inputs, train_targets, n_epochs, spacial_dim, ic, len_seq, is_saving_model=False, save_name=None):
     
-    model.build(optimizer='adam', loss='mean_squared_error')
-    model.fit(train_inputs, train_targets, n_epochs)
-    model.summary()
+    my_model.build(optimizer='adam', loss='mean_squared_error')
+    my_model.fit(train_inputs, train_targets, n_epochs)
+    my_model.summary()
     if is_saving_model:
-        model.model.save(f"trained_models/lorenz-lstm-lb({len_seq}).h5")
+        if save_name is None:
+            my_model.my_save(f"trained_models/{my_model.name}.h5")
+        else:
+            my_model.my_save(save_name)
     
     
-    pred_seq = model.test(ic,n_steps=test_steps)
+    pred_seq = my_model.test(ic,n_steps=test_steps)
     pred_seq = pred_seq.reshape(-1, spacial_dim)
 
     return pred_seq
 
-def plot_look_back(len_seq):
+def load_model(model_name):
+    model_lstm = rnn.Lstm()
+    model_lstm.my_load(model_name)
+
+    return model_lstm
+
+def lorenz_pred(len_seq):
     # ## Constants
 
     # len_seq = 2
@@ -52,24 +61,20 @@ def plot_look_back(len_seq):
         sequenced_test_targets,
     ) = sequenced_train_test
 
-
-    # The rnn
-
     model_vinilla = rnn.Simple_rnn(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim))
-    # model_lstm = rnn.lstm(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim)) 
-    model_lstm = rnn.Lstm()
-    model_lstm.load("trained_models/lorenz-lstm-lb(3).h5")
-
+    model_lstm = rnn.Lstm(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim)) 
+    
     # predicts
     ic = sequenced_test_inputs[test_indx]
-    pred_lstm = model_lstm.test(ic,n_steps=test_steps).reshape(-1, spacial_dim)
-    
-    # pred_lstm = rnn_alt(model_lstm, train_inputs, train_targets, n_epochs, 
-                        # spacial_dim, ic, len_seq, is_saving_model=True)
+
+    pred_lstm = rnn_alt(model_lstm, train_inputs, train_targets, n_epochs, 
+                        spacial_dim, ic, len_seq, is_saving_model=True)
     pred_vanilla = rnn_alt(model_vinilla, train_inputs, train_targets,
                             n_epochs, spacial_dim, ic, len_seq)
 
+    return sequenced_test_targets, pred_lstm, pred_vanilla
 
+def plot_look_back(sequenced_test_targets, pred_lstm, pred_vanilla):
     # Extract x, y, z coordinates from test data
     test_x = sequenced_test_targets[test_indx][:test_steps, 0]
     test_y = sequenced_test_targets[test_indx][:test_steps, 1]
@@ -103,9 +108,10 @@ def plot_look_back(len_seq):
 
     # pg vis
 
-    py_visualiser(test_steps, len_seq, dataset=raw_data, seq_pos=pred_lstm, indx=8+test_indx)
+    # py_visualiser(test_steps, len_seq, dataset=raw_data, seq_pos=pred_lstm, indx=8+test_indx)
 
 # Testing for parameters
 
 for len_seq in (3,):
-    plot_look_back(len_seq)
+    sequenced_test_targets, pred_lstm, pred_vanilla = lorenz_pred(len_seq)
+    plot_look_back(sequenced_test_targets, pred_lstm, pred_vanilla)

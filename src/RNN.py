@@ -90,7 +90,7 @@ class Lstm():
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
-        self.name = f"LSTM with {self.n_layers} layers and {self.n_hidden} hidden nodes \n Input shape: {self.input_shape}"
+        self.name = f"lorenz-lstm-{self.n_layers}-layers-{self.n_hidden}-hidden_nodes-input_shape{self.input_shape}"
 
     
     def __repr__(self) -> str:
@@ -133,11 +133,12 @@ class Lstm():
     def summary(self):
         return self.model.summary()
 
-    def save(self, model_name="trained_models/unamed_model.h5"):
+    def my_save(self, model_name):
         self.model.save(model_name)
     
-    def load(self, model_name):
+    def my_load(self, model_name):
         self.model = keras.models.load_model(model_name)
+        self.name = model_name
         self.input_shape = self.model.layers[0].input_shape
         self.sequence_length = self.input_shape[1]
         self.spacial_dim = self.input_shape[2]
