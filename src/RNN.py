@@ -52,11 +52,13 @@ class simple_rnn():
         self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1, )
         
 
-    def test(self, sequenced_test_inputs, seq_indx=0):
+    def test(self, ic, n_steps=0):
         predicted_sequence = []
-        current_step = sequenced_test_inputs[seq_indx][0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
+        current_step = ic[0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
         print(current_step.shape)
-        for _ in range(len(sequenced_test_inputs[0])):
+        if not n_steps:
+            n_steps = len(ic)
+        for _ in range(n_steps):
             predicted_step = self.model.predict(current_step)
             predicted_sequence.append(predicted_step)
             # Update the current step by shifting the window
@@ -102,11 +104,13 @@ class lstm():
         self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1, )
         
 
-    def test(self, sequenced_test_inputs, seq_indx=0):
+    def test(self, ic, n_steps=0):
         predicted_sequence = []
-        current_step = sequenced_test_inputs[seq_indx][0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
+        current_step = ic[0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
         print(current_step.shape)
-        for _ in range(len(sequenced_test_inputs[0])):
+        if not n_steps:
+            n_steps = len(ic)
+        for _ in range(n_steps):
             predicted_step = self.model.predict(current_step)
             predicted_sequence.append(predicted_step)
             # Update the current step by shifting the window
