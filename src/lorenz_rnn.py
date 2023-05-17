@@ -26,7 +26,7 @@ def rnn_alt(model, train_inputs, train_targets, n_epochs, spacial_dim, ic, len_s
     model.fit(train_inputs, train_targets, n_epochs)
     model.summary()
     if is_saving_model:
-        model.save(f"trained_models/lorenz-lstm-lb({len_seq}).h5")
+        model.model.save(f"trained_models/lorenz-lstm-lb({len_seq}).h5")
     
     pred_seq = model.test(ic,n_steps=test_steps)
     pred_seq = pred_seq.reshape(-1, spacial_dim)
@@ -102,5 +102,7 @@ def plot_look_back(len_seq):
 
     # py_visualiser(len_seq, dataset=raw_data, seq_pos=pred_lstm)
 
-for i in (3,4,5):
-    plot_look_back(i)
+# Testing for parameters
+
+for len_seq in (3,4,5):
+    plot_look_back(len_seq)
