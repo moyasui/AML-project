@@ -20,12 +20,14 @@ test_steps = 10
 # import pygame as pg
 from visualisers.pg_visualiser import py_visualiser
 
-def rnn_alt(model, train_inputs, train_targets, n_epochs, spacial_dim, ic):
+def rnn_alt(model, train_inputs, train_targets, n_epochs, spacial_dim, ic, len_seq, is_saving_model=False):
     
     model.build(optimizer='adam', loss='mean_squared_error')
     model.fit(train_inputs, train_targets, n_epochs)
     model.summary()
-
+    if is_saving_model:
+        model.save(f"trained_models/lorenz-lstm-lb({len_seq}).h5")
+    
     pred_seq = model.test(ic,n_steps=test_steps)
     pred_seq = pred_seq.reshape(-1, spacial_dim)
 
@@ -57,9 +59,13 @@ def plot_look_back(len_seq):
     model_vinilla = rnn.simple_rnn(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim))
     model_lstm = rnn.lstm(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim)) 
     
+
     ic = sequenced_test_inputs[test_indx]
-    pred_lstm = rnn_alt(model_lstm, train_inputs, train_targets, n_epochs, spacial_dim, ic)
-    pred_vanilla = rnn_alt(model_vinilla, train_inputs, train_targets, n_epochs, spacial_dim, ic)
+    pred_lstm = rnn_alt(model_lstm, train_inputs, train_targets, n_epochs, 
+                        spacial_dim, ic, len_seq, is_saving_model=True)
+    pred_vanilla = rnn_alt(model_vinilla, train_inputs, train_targets,
+                            n_epochs, spacial_dim, ic, len_seq)
+
 
     # Extract x, y, z coordinates from test data
     test_x = sequenced_test_targets[test_indx][:test_steps, 0]
@@ -74,7 +80,7 @@ def plot_look_back(len_seq):
     
     ax.plot(pred_lstm[:,0], pred_lstm[:, 1], pred_lstm[:, 2], label='LSTM Predicted Sequence')
     ax.plot(pred_vanilla[:, 0], pred_vanilla[:, 1], pred_vanilla[:, 2], label='Vanilla Predicted Sequence')
-    ax.plot(test_x, test_y, test_z, label='Test Data')
+    ax.plot(test_x, test_y, test_z, label='Test Data', linestyle=":")
 
     # Set labels and title
     ax.set_xlabel('X')
