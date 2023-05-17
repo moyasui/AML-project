@@ -34,6 +34,10 @@ class simple_rnn():
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+        self.name = f"SimpleRNN with {self.n_layers} layers and {self.n_hidden} hidden nodes \n Input shape: {self.input_shape}"
+
+    def __repr__(self) -> str:
+        return self.name
 
     def build(self, optimizer, loss, dropout = 0):
         
@@ -84,6 +88,11 @@ class lstm():
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+        self.name = f"lorenz-lstm-{self.n_layers}-layers-{self.n_hidden}nodes-input_shape{self.input_shape}"
+
+    
+    def __repr__(self) -> str:
+        return self.name
 
     def build(self, optimizer, loss, dropout = 0):
         
@@ -120,6 +129,11 @@ class lstm():
     def summary(self):
         return self.model.summary()
 
-    
 
     
+    def my_load(self, model_name):
+        self.model = keras.models.load_model(model_name)
+        self.name = model_name
+        self.input_shape = self.model.layers[0].input_shape
+        self.sequence_length = self.input_shape[1]
+        self.spacial_dim = self.input_shape[2]
