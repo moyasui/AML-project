@@ -138,12 +138,14 @@ def eval_n_plot(sequenced_test_targets, pred_lstm, pred_vanilla, len_seq, n_epoc
 errs_lstm = np.zeros((4,4))
 errs_vanilla = np.zeros((4,4))
 
-all_n_epochs = (20,150,500,1000)
+all_n_epochs = (20,150,500)
 len_seqs = range(2,6)
+
 for i, n_epochs in enumerate(all_n_epochs):
     for j, len_seq in enumerate(len_seqs):
         # for k, lr in enumerate(np.logspace(10e-4,10e-1,4)):
-        optimizer = optimizers.Adam(learning_rate=10e-2)
+        print(f"------------{n_epochs} epochs------{len_seq} steps---------")
+        optimizer = optimizers.legacy.Adam() # tf warning says it slows down on m1 and m2
         sequenced_test_targets, pred_lstm, pred_vanilla = lorenz_pred(optimizer, len_seq)
         errs_lstm[i,j], errs_vanilla[i,j] = eval(sequenced_test_targets, pred_lstm, pred_vanilla)
             
