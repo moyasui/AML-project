@@ -2,7 +2,7 @@ import pygame
 import pandas as pd
 import numpy as np
 
-def py_visualiser(len_seq=2, dataset=None, filename=None, seq_pos=None, indx=8,):
+def py_visualiser(test_steps, len_seq=2, dataset=None, filename=None, seq_pos=None, indx=8,):
     # TODO: 
 # Set up Pygame
     pygame.init()
@@ -55,7 +55,7 @@ def py_visualiser(len_seq=2, dataset=None, filename=None, seq_pos=None, indx=8,)
         scaled_xy_pred = xy_pred * scale_factor + width // 2
 
     # Animation loop
-    for frame in range(len(data)-len_seq):
+    for frame in range(test_steps):
         # Clear the screen
         screen.fill((0, 0, 0))
 

@@ -100,7 +100,7 @@ def plot_look_back(len_seq):
 
     # pg vis
 
-    # py_visualiser(len_seq, dataset=raw_data, seq_pos=pred_lstm)
+    py_visualiser(test_steps, len_seq, dataset=raw_data, seq_pos=pred_lstm)
 
 # Testing for parameters
 
