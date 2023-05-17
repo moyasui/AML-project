@@ -15,7 +15,7 @@ def py_visualiser(test_steps, len_seq=2, dataset=None, filename=None, seq_pos=No
     # Set up the display
     width, height = 800, 800
     screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption('3D Function Animation')
+    pygame.display.set_caption('Lorenz Attractor Numerical vs RNN Animation')
 
     # Read CSV file 'src/csvs/lorenz.csv'
     if filename:
@@ -99,5 +99,6 @@ def py_visualiser(test_steps, len_seq=2, dataset=None, filename=None, seq_pos=No
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+
 
 # py_visualiser()

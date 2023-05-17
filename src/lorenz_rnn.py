@@ -1,7 +1,7 @@
 import numpy as np
 import utils as ut
 import RNN as rnn
-
+from tensorflow import keras
 import plot_utils
 
 import matplotlib.pyplot as plt
@@ -28,6 +28,7 @@ def rnn_alt(model, train_inputs, train_targets, n_epochs, spacial_dim, ic, len_s
     if is_saving_model:
         model.model.save(f"trained_models/lorenz-lstm-lb({len_seq}).h5")
     
+    
     pred_seq = model.test(ic,n_steps=test_steps)
     pred_seq = pred_seq.reshape(-1, spacial_dim)
 
@@ -37,8 +38,6 @@ def plot_look_back(len_seq):
     # ## Constants
 
     # len_seq = 2
-    
-
     raw_data, inputs, targets = ut.prep_data('lorenz', len_seq)
 
     train_test, sequenced_train_test = ut.train_test_split(
@@ -100,9 +99,9 @@ def plot_look_back(len_seq):
 
     # pg vis
 
-    py_visualiser(test_steps, len_seq, dataset=raw_data, seq_pos=pred_lstm)
+    py_visualiser(test_steps, len_seq, dataset=raw_data, seq_pos=pred_lstm, indx=8+test_indx)
 
 # Testing for parameters
 
-for len_seq in (3,4,5):
+for len_seq in (2,):
     plot_look_back(len_seq)
