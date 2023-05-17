@@ -23,7 +23,7 @@ rng = np.random.default_rng(2048)
 
 
 
-class simple_rnn():
+class Simple_rnn():
     """
     here we implement the simple keras RNN
     """
@@ -34,6 +34,10 @@ class simple_rnn():
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+        self.name = f"LSTM with {self.n_layers} layers and {self.n_hidden} hidden nodes \n Input shape: {self.input_shape}"
+
+    def __repr__(self) -> str:
+        return self.name
 
     def build(self, optimizer, loss, dropout = 0):
         
@@ -74,18 +78,23 @@ class simple_rnn():
 
 
 
-class lstm():
+class Lstm():
     """
     here we implement the simple keras LSTM
     """
     
-    def __init__(self, n_hidden, n_layers, input_shape):
+    def __init__(self, n_hidden=0, n_layers=0, input_shape=(0,0)):
         self.model = Sequential()
         self.input_shape = input_shape
         self.n_hidden = n_hidden
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+        self.name = f"LSTM with {self.n_layers} layers and {self.n_hidden} hidden nodes \n Input shape: {self.input_shape}"
+
+    
+    def __repr__(self) -> str:
+        return self.name
 
     def build(self, optimizer, loss, dropout = 0):
         
@@ -124,6 +133,14 @@ class lstm():
     def summary(self):
         return self.model.summary()
 
+    def save(self, model_name="trained_models/unamed_model.h5"):
+        self.model.save(model_name)
     
+    def load(self, model_name):
+        self.model = keras.models.load_model(model_name)
+        self.input_shape = self.model.layers[0].input_shape
+        self.sequence_length = self.input_shape[1]
+        self.spacial_dim = self.input_shape[2]
+
 
     

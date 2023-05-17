@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 
+# import pygame as pg
+from visualisers.pg_visualiser import py_visualiser
+
 train_size = 0.8
 rng = np.random.default_rng(2048)
 n_epochs = 1
@@ -16,9 +19,6 @@ spacial_dim = 3
 n_hidden = 32
 test_indx = 1
 test_steps = 10
-
-# import pygame as pg
-from visualisers.pg_visualiser import py_visualiser
 
 def rnn_alt(model, train_inputs, train_targets, n_epochs, spacial_dim, ic, len_seq, is_saving_model=False):
     
@@ -55,13 +55,17 @@ def plot_look_back(len_seq):
 
     # The rnn
 
-    model_vinilla = rnn.simple_rnn(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim))
-    model_lstm = rnn.lstm(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim)) 
-    
+    model_vinilla = rnn.Simple_rnn(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim))
+    # model_lstm = rnn.lstm(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim)) 
+    model_lstm = rnn.Lstm()
+    model_lstm.load("trained_models/lorenz-lstm-lb(3).h5")
 
+    # predicts
     ic = sequenced_test_inputs[test_indx]
-    pred_lstm = rnn_alt(model_lstm, train_inputs, train_targets, n_epochs, 
-                        spacial_dim, ic, len_seq, is_saving_model=True)
+    pred_lstm = model_lstm.test(ic,n_steps=test_steps).reshape(-1, spacial_dim)
+    
+    # pred_lstm = rnn_alt(model_lstm, train_inputs, train_targets, n_epochs, 
+                        # spacial_dim, ic, len_seq, is_saving_model=True)
     pred_vanilla = rnn_alt(model_vinilla, train_inputs, train_targets,
                             n_epochs, spacial_dim, ic, len_seq)
 
@@ -103,5 +107,5 @@ def plot_look_back(len_seq):
 
 # Testing for parameters
 
-for len_seq in (2,):
+for len_seq in (3,):
     plot_look_back(len_seq)
