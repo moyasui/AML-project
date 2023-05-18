@@ -23,7 +23,7 @@ rng = np.random.default_rng(2048)
 
 
 
-class simple_rnn():
+class Simple_rnn():
     """
     here we implement the simple keras RNN
     """
@@ -34,6 +34,10 @@ class simple_rnn():
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+        self.name = f"LSTM with {self.n_layers} layers and {self.n_hidden} hidden nodes \n Input shape: {self.input_shape}"
+
+    def __repr__(self) -> str:
+        return self.name
 
     def build(self, optimizer, loss, dropout = 0):
         
@@ -52,11 +56,13 @@ class simple_rnn():
         self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1, )
         
 
-    def test(self, sequenced_test_inputs, seq_indx=0):
+    def test(self, ic, n_steps=0):
         predicted_sequence = []
-        current_step = sequenced_test_inputs[seq_indx][0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
+        current_step = ic[0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
         print(current_step.shape)
-        for _ in range(len(sequenced_test_inputs[0])):
+        if not n_steps:
+            n_steps = len(ic)
+        for _ in range(n_steps):
             predicted_step = self.model.predict(current_step)
             predicted_sequence.append(predicted_step)
             # Update the current step by shifting the window
@@ -72,18 +78,23 @@ class simple_rnn():
 
 
 
-class lstm():
+class Lstm():
     """
     here we implement the simple keras LSTM
     """
     
-    def __init__(self, n_hidden, n_layers, input_shape):
+    def __init__(self, n_hidden=0, n_layers=0, input_shape=(0,0)):
         self.model = Sequential()
         self.input_shape = input_shape
         self.n_hidden = n_hidden
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+        self.name = f"lorenz-lstm-{self.n_layers}-layers-{self.n_hidden}-hidden_nodes-input_shape{self.input_shape}"
+
+    
+    def __repr__(self) -> str:
+        return self.name
 
     def build(self, optimizer, loss, dropout = 0):
         
@@ -102,11 +113,13 @@ class lstm():
         self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1, )
         
 
-    def test(self, sequenced_test_inputs, seq_indx=0):
+    def test(self, ic, n_steps=0):
         predicted_sequence = []
-        current_step = sequenced_test_inputs[seq_indx][0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
+        current_step = ic[0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
         print(current_step.shape)
-        for _ in range(len(sequenced_test_inputs[0])):
+        if not n_steps:
+            n_steps = len(ic)
+        for _ in range(n_steps):
             predicted_step = self.model.predict(current_step)
             predicted_sequence.append(predicted_step)
             # Update the current step by shifting the window
@@ -120,6 +133,15 @@ class lstm():
     def summary(self):
         return self.model.summary()
 
+    def my_save(self, model_name):
+        self.model.save(model_name)
     
+    def my_load(self, model_name):
+        self.model = keras.models.load_model(model_name)
+        self.name = model_name
+        self.input_shape = self.model.layers[0].input_shape
+        self.sequence_length = self.input_shape[1]
+        self.spacial_dim = self.input_shape[2]
+
 
     

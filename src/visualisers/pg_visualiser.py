@@ -2,7 +2,7 @@ import pygame
 import pandas as pd
 import numpy as np
 
-def py_visualiser(dataset=None, filename=None, seq_pos=None, indx=8,):
+def py_visualiser(test_steps, len_seq=2, dataset=None, filename=None, seq_pos=None, indx=8,):
     # TODO: 
 # Set up Pygame
     pygame.init()
@@ -15,7 +15,7 @@ def py_visualiser(dataset=None, filename=None, seq_pos=None, indx=8,):
     # Set up the display
     width, height = 800, 800
     screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption('3D Function Animation')
+    pygame.display.set_caption('Lorenz Attractor Numerical vs RNN Animation')
 
     # Read CSV file 'src/csvs/lorenz.csv'
     if filename:
@@ -55,7 +55,7 @@ def py_visualiser(dataset=None, filename=None, seq_pos=None, indx=8,):
         scaled_xy_pred = xy_pred * scale_factor + width // 2
 
     # Animation loop
-    for frame in range(len(data)-2):
+    for frame in range(test_steps):
         # Clear the screen
         screen.fill((0, 0, 0))
 
@@ -74,7 +74,7 @@ def py_visualiser(dataset=None, filename=None, seq_pos=None, indx=8,):
         # Add the current point to the list
         # test_points.append((pos_x, pos_y, color_test))
 
-        test_point = np.array(scaled_xy_t.iloc[frame+2]-np.array([300,300]))
+        test_point = np.array(scaled_xy_t.iloc[frame+len_seq]-np.array([300,300]))
         
         test_points.append(test_point)
 
@@ -99,5 +99,6 @@ def py_visualiser(dataset=None, filename=None, seq_pos=None, indx=8,):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+
 
 # py_visualiser()
