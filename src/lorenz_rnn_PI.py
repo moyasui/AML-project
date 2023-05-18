@@ -54,7 +54,7 @@ train_inputs, test_inputs, train_targets, test_targets = train_test
 
 model_lstm_PI = rnn.lstm(n_hidden=32, n_layers=1, input_shape=(2, spacial_dim))
 
-pi_loss = lf.loss(momentum_conservation=True, momentum_weight=0.005)
+pi_loss = lf.loss(momentum_conservation=True, momentum_weight=0.5)
 
 model_lstm_PI.build(optimizer='adam', loss=pi_loss.custom_loss)
 model_lstm_PI.fit(train_inputs, train_targets, n_epochs)

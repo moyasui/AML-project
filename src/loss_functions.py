@@ -1,8 +1,9 @@
 import keras.backend as K
+
 from tensorflow.python.ops import math_ops
 import numpy as np
 import tensorflow as tf
-tf.config.experimental_run_functions_eagerly(True)
+#tf.config.experimental_run_functions_eagerly(True)
 
 SIGMA = 10 
 BETA = 8/3
@@ -21,14 +22,15 @@ class loss():
         self.pos_pred_x = None
         self.pos_pred_y = None
         self.pos_pred_z = None
+
         self.dx_dt = None
         self.dy_dt = None
         self.dz_dt = None
-        
+
         self.px_true  = None
         self.py_true  = None
         self.pz_true  = None
-        
+
         self.px_pred  = None
         self.py_pred  = None
         self.pz_pred  = None
@@ -42,17 +44,24 @@ class loss():
         
 
     def _momentum_conservation_loss(self): 
-        loss_x = self._mse_loss(self.dx_dt, self.px_pred)
-        loss_y = self._mse_loss(self.dy_dt, self.py_pred)
-        loss_z = self._mse_loss(self.dz_dt, self.pz_pred)
+        # loss_x = self._mse_loss(self.dx_dt, self.px_pred[1:-1])
+        # loss_y = self._mse_loss(self.dy_dt, self.py_pred[1:-1])
+        # loss_z = self._mse_loss(self.dz_dt, self.pz_pred[1:-1])
+
+        loss_x = self._mse_loss(self.px_true, self.px_pred)
+        loss_y = self._mse_loss(self.px_true, self.py_pred)
+        loss_z = self._mse_loss(self.px_true, self.pz_pred)
 
         return loss_x + loss_y + loss_z
+        
 
     def custom_loss(self, pos_true, pos_pred):
         """
         this is a custom function that will be used in a keras model.
         we are then going to be using keras.backend to do the calculations instead of tensorflow
         """
+
+
         self.pos_true_x = K.flatten(pos_true[:, 0])
         self.pos_true_y = K.flatten(pos_true[:, 1])
         self.pos_true_z = K.flatten(pos_true[:, 2])
@@ -60,6 +69,13 @@ class loss():
         self.pos_pred_x = K.flatten(pos_pred[:, 0])
         self.pos_pred_y = K.flatten(pos_pred[:, 1])
         self.pos_pred_z = K.flatten(pos_pred[:, 2])
+
+        mse_loss_x = self._mse_loss(self.pos_true_x, self.pos_pred_x)
+        mse_loss_y = self._mse_loss(self.pos_true_y, self.pos_pred_y)
+        mse_loss_z = self._mse_loss(self.pos_true_z, self.pos_pred_z)
+
+        mse_loss = mse_loss_x + mse_loss_y + mse_loss_z
+        
 
         self.px_true = K.flatten(SIGMA * (self.pos_true_y - self.pos_true_x))
         self.py_true = K.flatten(self.pos_true_x *(RHO - self.pos_true_z) - self.pos_true_y)
@@ -69,20 +85,13 @@ class loss():
         self.py_pred = K.flatten(self.pos_pred_x *(RHO - self.pos_pred_z) - self.pos_pred_y)
         self.pz_pred = K.flatten(self.pos_pred_z * (self.pos_pred_y - BETA))
 
-
-
-        self.dx_dt = K.flatten(np.gradient(pos_true[:, 0].numpy()))
-        self.dy_dt = K.flatten(np.gradient(pos_true[:, 1].numpy()))
-        self.dz_dt = K.flatten(np.gradient(pos_true[:, 2].numpy()))
-
-
+        # dt = 1
+       
+        # self.dx_dt = (self.pos_pred_x[2:] -  self.pos_pred_x[:-2]) / 2*dt
+        # self.dy_dt = (self.pos_pred_y[2:] - self.pos_pred_y[:-2] )/  2*dt
+        # self.dz_dt = (self.pos_pred_z[2:] - self.pos_pred_z[:-2] )/  2*dt
         
-        mse_loss_x = self._mse_loss(self.pos_true_x, self.pos_pred_x)
-        mse_loss_y = self._mse_loss(self.pos_true_y, self.pos_pred_y)
-        mse_loss_z = self._mse_loss(self.pos_true_z, self.pos_pred_z)
 
-        mse_loss = mse_loss_x + mse_loss_y + mse_loss_z
-        
         energy_loss = 0
         momentum_loss = 0
 
