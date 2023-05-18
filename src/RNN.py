@@ -26,12 +26,14 @@ rng = np.random.default_rng(2048)
 class Rnn():
 
     def __init__(self, n_hidden, n_layers, input_shape) -> None:
+
         self.model = Sequential()
         self.input_shape = input_shape
         self.n_hidden = n_hidden
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+
     
     def fit(self, X_train, y_train, epochs):
         # add warning that batch_size is default to None
@@ -41,6 +43,7 @@ class Rnn():
     
 
     def predict(self, ic, n_steps=0):
+
         predicted_sequence = []
         current_step = ic[0].reshape(-1, self.sequence_length, self.spacial_dim) # Initialize the current 2 step with the input data
         print(current_step.shape)
@@ -72,13 +75,16 @@ class Rnn():
 
 
 
+
 class Simple_rnn(Rnn):
+
     """
     here we implement the simple keras RNN
     """
     def __init__(self, n_hidden, n_layers, input_shape):
         super().__init__(n_hidden, n_layers, input_shape)
         self.name = f"RNN with {self.n_layers} layers and {self.n_hidden} hidden nodes \n Input shape: {self.input_shape}"
+
 
     def __repr__(self) -> str:
         return self.name
@@ -93,6 +99,7 @@ class Simple_rnn(Rnn):
     
         
 
+
 class Lstm(Rnn):
     """
     here we implement the simple keras LSTM
@@ -102,9 +109,14 @@ class Lstm(Rnn):
         super().__init__(n_hidden, n_layers, input_shape)
         self.name = f"lorenz-lstm-{self.n_layers}-layers-{self.n_hidden}nodes-input_shape{self.input_shape}"
 
+
+    def my_save(self, model_name):
+        self.model.save(model_name)
     
+
     def __repr__(self) -> str:
         return self.name
+
 
     def build(self, optimizer, loss, dropout = 0):
         

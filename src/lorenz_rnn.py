@@ -2,8 +2,10 @@ import numpy as np
 import utils as ut
 import RNN as rnn
 from tensorflow import keras
+
 from tensorflow.keras import optimizers
 from tensorflow.keras.losses import MeanSquaredError
+
 import plot_utils
 
 import matplotlib.pyplot as plt
@@ -14,15 +16,17 @@ import seaborn as sns
 from visualisers.pg_visualiser import py_visualiser
 
 
+
+
 train_size = 0.8
 rng = np.random.default_rng(2048)
-n_epochs = 1000
+n_epochs = 1
 batch_size = None
-len_seq = 2
 spacial_dim = 3
 n_hidden = 32
 test_indx = 1
 test_steps = 10
+
 
 def rnn_alt(my_model, 
             optimizer, 
@@ -34,6 +38,8 @@ def rnn_alt(my_model,
             save_name=None):
     
     my_model.build(optimizer=optimizer, loss='mean_squared_error')
+
+
     my_model.fit(train_inputs, train_targets, n_epochs)
     my_model.summary()
     if is_saving_model:
@@ -43,7 +49,9 @@ def rnn_alt(my_model,
             my_model.my_save(save_name)
     
     
+
     pred_seq = my_model.predict(ic,n_steps=test_steps)
+
     pred_seq = pred_seq.reshape(-1, spacial_dim)
 
     return pred_seq
@@ -55,6 +63,7 @@ def load_model(model_name):
     return model_lstm
 
 def lorenz_pred(optimizer, len_seq):
+
     raw_data, inputs, targets = ut.prep_data('lorenz', len_seq)
 
     train_test, sequenced_train_test = ut.train_test_split(
@@ -90,6 +99,7 @@ def eval(sequenced_test_targets, pred_lstm, pred_vanilla):
     return err_lstm, err_vanilla
 
 def eval_n_plot(sequenced_test_targets, pred_lstm, pred_vanilla, len_seq, n_epochs, learning_rate):
+
     # Extract x, y, z coordinates from test data
     test_x = sequenced_test_targets[test_indx][:test_steps, 0]
     test_y = sequenced_test_targets[test_indx][:test_steps, 1]
@@ -99,11 +109,12 @@ def eval_n_plot(sequenced_test_targets, pred_lstm, pred_vanilla, len_seq, n_epoc
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
+
     # Plot the predicted sequence
+
     ax.plot(pred_lstm[:,0], pred_lstm[:, 1], pred_lstm[:, 2], label='LSTM Predicted Sequence')
     ax.plot(pred_vanilla[:, 0], pred_vanilla[:, 1], pred_vanilla[:, 2], label='Vanilla Predicted Sequence')
     ax.plot(test_x, test_y, test_z, label='Test Data', linestyle=":")
-
 
     # Set labels and title
     ax.set_xlabel('X')
@@ -115,6 +126,7 @@ def eval_n_plot(sequenced_test_targets, pred_lstm, pred_vanilla, len_seq, n_epoc
     ax.legend()
 
     # save plot
+
     file_info = f"./Analysis/figs/lorenz_rnn-{len_seq}-{n_epochs}-{learning_rate:.2f}.pdf"
     plt.savefig(file_info)
 
@@ -172,3 +184,4 @@ ax1.set_ylabel('len_seq')
 ax2.set_ylabel('len_seq')
 plt.title('Confusion Matrix')
 plt.show()
+
