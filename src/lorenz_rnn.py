@@ -90,12 +90,12 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
 # Plot the predicted sequence
-ax.plot(pred_x_lstm, pred_y_lstm, pred_z_lstm, label='LSTM Predicted Sequence')
-ax.plot(pred_x_vanilla, pred_y_vanilla, pred_z_vanilla, label='Vanilla Predicted Sequence')
+ax.plot(pred_x_lstm, pred_y_lstm, pred_z_lstm, label='LSTM Predicted Sequence', linestyle='--')
+ax.plot(pred_x_vanilla, pred_y_vanilla, pred_z_vanilla, label='Vanilla Predicted Sequence', linestyle='-.')
 
 
 # Plot the test data
-ax.plot(test_x, test_y, test_z, label='Test Data', linestyle='-.')
+ax.plot(test_x, test_y, test_z, label='Test Data')
 
 # Set labels and title
 ax.set_xlabel('X')

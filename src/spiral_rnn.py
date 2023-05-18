@@ -39,12 +39,12 @@ train_inputs, test_inputs, train_targets, test_targets = train_test
 
 
 model_lstm = rnn.lstm(n_hidden=32, n_layers=1, input_shape=(2, spacial_dim))
-model_lstm.build(optimizer='adam', loss='mean_squared_error')
+model_lstm.build(optimizer='adam', loss='MeanSquaredLogarithmicError')
 model_lstm.fit(train_inputs, train_targets, n_epochs)
 model_lstm.summary()
 
 model_vanilla = rnn.simple_rnn(n_hidden=32, n_layers=1, input_shape=(2, spacial_dim))
-model_vanilla.build(optimizer='adam', loss='mean_squared_error')
+model_vanilla.build(optimizer='adam', loss='MeanSquaredLogarithmicError')
 model_vanilla.fit(train_inputs, train_targets, n_epochs)
 model_vanilla.summary()
 

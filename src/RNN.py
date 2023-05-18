@@ -18,9 +18,13 @@ from tensorflow.keras.layers import Dense, LSTM, Dropout, GRU, Bidirectional, Si
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import SGD
 from tensorflow.random import set_seed
+import random
 
-rng = np.random.default_rng(2048)
-
+seed = 42
+random.seed(seed)
+np.random.seed(seed)
+tf.random.set_seed(seed)
+tf.keras.utils.set_random_seed(seed)
 
 
 class simple_rnn():
@@ -34,6 +38,8 @@ class simple_rnn():
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+        self.history = None
+
 
     def build(self, optimizer, loss, dropout = 0):
         
@@ -49,7 +55,7 @@ class simple_rnn():
         # add warning that batch_size is default to None
         print("Warning: Batch size is default to None")
 
-        self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1, )
+        self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1 )
         
 
     def test(self, sequenced_test_inputs, seq_indx=0):
@@ -69,6 +75,9 @@ class simple_rnn():
 
     def summary(self):
         return self.model.summary()
+    
+    def get_history(self):
+        return self.history
 
 
 
@@ -84,6 +93,7 @@ class lstm():
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+        self.history = None
 
     def build(self, optimizer, loss, dropout = 0):
         
@@ -119,6 +129,9 @@ class lstm():
 
     def summary(self):
         return self.model.summary()
+
+    def get_history(self):
+        return self.history
 
     
 
