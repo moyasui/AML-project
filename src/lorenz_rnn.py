@@ -1,6 +1,6 @@
 import numpy as np
 import utils as ut
-import RNN_copy as rnn
+import RNN as rnn
 from tensorflow import keras
 from tensorflow.keras import optimizers
 from tensorflow.keras.losses import MeanSquaredError
