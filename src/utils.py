@@ -61,3 +61,4 @@ def train_test_split(inputs, targets, train_size, len_seq, spacial_dim):
     sequenced_train_test = [sequences_train_inputs, sequenced_test_inputs, sequenced_train_targets, sequenced_test_targets]
 
     return train_test, sequenced_train_test
+

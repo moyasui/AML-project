@@ -18,10 +18,9 @@ from tensorflow.keras.layers import Dense, LSTM, Dropout, GRU, Bidirectional, Si
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.random import set_seed
-
+import random
 
 rng = np.random.default_rng(2048)
-
 
 class Rnn():
 
@@ -33,13 +32,15 @@ class Rnn():
         self.n_layers = n_layers
         self.sequence_length = input_shape[0]
         self.spacial_dim = input_shape[1]
+        self.history = None
+
 
     
     def fit(self, X_train, y_train, epochs):
         # add warning that batch_size is default to None
         print("Warning: Batch size is default to None")
-
-        self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1, )
+        
+        self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1 )        
     
 
     def predict(self, ic, n_steps=0):
@@ -56,7 +57,6 @@ class Rnn():
             current_step = np.concatenate([current_step[:, 1:, :], predicted_step.reshape(1,1, self.spacial_dim)], axis=1)
 
         predicted_sequence = np.array(predicted_sequence)
-        
 
         return predicted_sequence
 
@@ -72,9 +72,6 @@ class Rnn():
         self.input_shape = self.model.layers[0].input_shape
         self.sequence_length = self.input_shape[1]
         self.spacial_dim = self.input_shape[2]
-
-
-
 
 class Simple_rnn(Rnn):
 
@@ -96,8 +93,6 @@ class Simple_rnn(Rnn):
         
         self.model.add(Dense(self.input_shape[1])) # output layer, input_shape[1] = spacial_dim
         self.model.compile(optimizer=optimizer, loss=loss)
-    
-        
 
 
 class Lstm(Rnn):

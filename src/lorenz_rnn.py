@@ -184,4 +184,3 @@ ax1.set_ylabel('len_seq')
 ax2.set_ylabel('len_seq')
 plt.title('Confusion Matrix')
 plt.show()
-
