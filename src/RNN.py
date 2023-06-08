@@ -20,7 +20,7 @@ from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.random import set_seed
 import random
 
-rng = np.random.default_rng(2048)
+rng = np.random.default_rng(2042)
 
 class Rnn():
 
@@ -36,11 +36,14 @@ class Rnn():
 
 
     
-    def fit(self, X_train, y_train, epochs):
+    def fit(self, X_train, y_train, epochs, history=False):
         # add warning that batch_size is default to None
         print("Warning: Batch size is default to None")
         
-        self.model.fit(X_train, y_train, epochs=epochs, batch_size=None, verbose=1 )        
+        history = self.model.fit(X_train, y_train, epochs=epochs, validation_split=0.2, batch_size=None, verbose=1)
+        
+        if history:
+            return history
     
 
     def predict(self, ic, n_steps=0):

@@ -62,3 +62,8 @@ def train_test_split(inputs, targets, train_size, len_seq, spacial_dim):
 
     return train_test, sequenced_train_test
 
+def moving_average(a, n=5) :
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+

@@ -15,52 +15,53 @@ import seaborn as sns
 # import pygame as pg
 from visualisers.pg_visualiser import py_visualiser
 
-
-
-
 train_size = 0.8
-rng = np.random.default_rng(2048)
-n_epochs = 1
+n_epochs = 500
 batch_size = None
+test_steps = None
+
 spacial_dim = 3
 n_hidden = 32
 test_indx = 1
-test_steps = 10
 
 
-def rnn_alt(my_model, 
-            optimizer, 
-            train_inputs, train_targets, 
-            n_epochs, 
-            spacial_dim, 
-            ic, 
-            is_saving_model=False, 
-            save_name=None):
-    
+rng = np.random.default_rng(2044)
+
+
+def rnn_alt(
+    my_model,
+    optimizer,
+    train_inputs,
+    train_targets,
+    n_epochs,
+    spacial_dim,
+    ic,
+    is_saving_model=False,
+    save_name=None,
+):
+
     my_model.build(optimizer=optimizer, loss='mean_squared_error')
-
-
     my_model.fit(train_inputs, train_targets, n_epochs)
     my_model.summary()
+
     if is_saving_model:
         if save_name is None:
-            my_model.my_save(f"trained_models/{my_model.name}.h5")
+            my_model.my_save(f'trained_models/{my_model.name}.h5')
         else:
             my_model.my_save(save_name)
-    
-    
 
-    pred_seq = my_model.predict(ic,n_steps=test_steps)
-
+    pred_seq = my_model.predict(ic, n_steps=test_steps)
     pred_seq = pred_seq.reshape(-1, spacial_dim)
 
     return pred_seq
+
 
 def load_model(model_name):
     model_lstm = rnn.Lstm()
     model_lstm.my_load(model_name)
 
     return model_lstm
+
 
 def lorenz_pred(optimizer, len_seq):
 
@@ -78,17 +79,41 @@ def lorenz_pred(optimizer, len_seq):
         sequenced_test_targets,
     ) = sequenced_train_test
 
-    model_vinilla = rnn.Simple_rnn(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim))
-    model_lstm = rnn.Lstm(n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim)) 
+    model_vanilla = rnn.Simple_rnn(
+        n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim)
+    )
+    model_lstm = rnn.Lstm(
+        n_hidden=32, n_layers=1, input_shape=(len_seq, spacial_dim)
+    )
     
     # predicts
     ic = sequenced_test_inputs[test_indx]
 
-    pred_lstm = rnn_alt(model_lstm, optimizer, train_inputs, train_targets, n_epochs, spacial_dim, ic, False)
-    pred_vanilla = rnn_alt(model_vinilla, optimizer, train_inputs, train_targets,n_epochs, spacial_dim, ic)
-    
+    pred_vanilla = rnn_alt(
+        model_vanilla,
+        optimizer,
+        train_inputs,
+        train_targets,
+        n_epochs,
+        spacial_dim,
+        ic,
+        False
+    )
+
+    pred_lstm = rnn_alt(
+        model_lstm,
+        optimizer,
+        train_inputs,
+        train_targets,
+        n_epochs,
+        spacial_dim,
+        ic,
+        False,
+    )
+
+
     return sequenced_test_targets, pred_lstm, pred_vanilla
-    
+
 
 def eval(sequenced_test_targets, pred_lstm, pred_vanilla):
 
@@ -98,7 +123,14 @@ def eval(sequenced_test_targets, pred_lstm, pred_vanilla):
     err_vanilla = mse(test, pred_vanilla)
     return err_lstm, err_vanilla
 
-def eval_n_plot(sequenced_test_targets, pred_lstm, pred_vanilla, len_seq, n_epochs, learning_rate):
+
+def plot_results(
+    sequenced_test_targets,
+    pred_lstm,
+    pred_vanilla,
+    len_seq,
+    learning_rate,
+):
 
     # Extract x, y, z coordinates from test data
     test_x = sequenced_test_targets[test_indx][:test_steps, 0]
@@ -109,25 +141,37 @@ def eval_n_plot(sequenced_test_targets, pred_lstm, pred_vanilla, len_seq, n_epoc
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-
     # Plot the predicted sequence
+    ax.plot(
+        pred_lstm[:, 0],
+        pred_lstm[:, 1],
+        pred_lstm[:, 2],
+        label='LSTM Predicted Sequence',
+        linestyle=':'
 
-    ax.plot(pred_lstm[:,0], pred_lstm[:, 1], pred_lstm[:, 2], label='LSTM Predicted Sequence')
-    ax.plot(pred_vanilla[:, 0], pred_vanilla[:, 1], pred_vanilla[:, 2], label='Vanilla Predicted Sequence')
-    ax.plot(test_x, test_y, test_z, label='Test Data', linestyle=":")
+    )
+    ax.plot(
+        pred_vanilla[:, 0],
+        pred_vanilla[:, 1],
+        pred_vanilla[:, 2],
+        label='Vanilla Predicted Sequence',
+        linestyle='-.'
+    )
+    ax.plot(test_x, test_y, test_z, label='Test Data')
 
     # Set labels and title
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    ax.set_title(f'Predicted Sequence vs Test Data (look back = {len_seq})')
+    #ax.set_title(f'Predicted Sequence vs Test Data (look back = {len_seq})')
 
     # Add a legend
     ax.legend()
 
     # save plot
 
-    file_info = f"./Analysis/figs/lorenz_rnn-{len_seq}-{n_epochs}-{learning_rate:.2f}.pdf"
+    file_info = f'./Analysis/figs/lorenz_rnn-{len_seq}-{n_epochs}-{learning_rate:.2f}.pdf'
+
     plt.savefig(file_info)
 
     # Show the plot
@@ -135,7 +179,6 @@ def eval_n_plot(sequenced_test_targets, pred_lstm, pred_vanilla, len_seq, n_epoc
     # Don't show the plot
     plt.close()
 
-    
 
 # pg vis
 
@@ -147,40 +190,150 @@ def eval_n_plot(sequenced_test_targets, pred_lstm, pred_vanilla, len_seq, n_epoc
 #     sequenced_test_targets, pred_lstm, pred_vanilla = lorenz_pred("adam", len_seq)
 #     plot_sim_lstm(sequenced_test_targets, pred_lstm, pred_vanilla)
 
-errs_lstm = np.zeros((3,4))
-errs_vanilla = np.zeros((3,4))
 
-all_n_epochs = (20,150,500)
-len_seqs = range(2,6)
+# all_n_epochs = (20, 150, 500)
+# len_seqs = range(2, 7)
+# dim_heatmap = (len(all_n_epochs), len(len_seqs))
 
-for i, n_epochs in enumerate(all_n_epochs):
-    for j, len_seq in enumerate(len_seqs):
-        # for k, lr in enumerate(np.logspace(10e-4,10e-1,4)):
-        print(f"------------{n_epochs} epochs------{len_seq} steps---------")
-        optimizer = optimizers.legacy.Adam() # tf warning says it slows down on m1 and m2
-        sequenced_test_targets, pred_lstm, pred_vanilla = lorenz_pred(optimizer, len_seq)
-        errs_lstm[i,j], errs_vanilla[i,j] = eval(sequenced_test_targets, pred_lstm, pred_vanilla)
-            
-            
-print(errs_lstm, errs_vanilla)
+# errs_lstm = np.zeros(dim_heatmap)
+# errs_vanilla = np.zeros(dim_heatmap)
+
+# for i, n_epochs in enumerate(all_n_epochs):
+#     for j, len_seq in enumerate(len_seqs):
+#         # for k, lr in enumerate(np.logspace(10e-4,10e-1,4)):
+#         print(f'------------{n_epochs} epochs------{len_seq} steps---------')
+#         optimizer = (
+#             optimizers.legacy.Adam()
+#         )   # tf warning says it slows down on m1 and m2
+#         sequenced_test_targets, pred_lstm, pred_vanilla = lorenz_pred(
+#             optimizer, len_seq
+#         )
+#         errs_lstm[i, j], errs_vanilla[i, j] = eval(
+#             sequenced_test_targets, pred_lstm, pred_vanilla
+#         )
 
 
-# Set up the figure and axes
-fig, (ax1, ax2) = plt.subplots(1, 2)
-sns.set(font_scale=1.4)  # Adjust font size
+# print(errs_lstm, errs_vanilla)
 
-# Plot the confusion matrix
+# # make two heatmaps. One for lstm and one for vanilla but display on same image
+# sns.heatmap(
+#     errs_lstm,
+#     annot=True,
+#     fmt='.4g',
+#     cmap='Blues',
+#     cbar_kws={'label': 'Mean Squared Error'},
+#     xticklabels=len_seqs,
+#     yticklabels=all_n_epochs,
+# )
+# # axis labels
+# plt.xlabel('Sequence Length')
+# plt.ylabel('Number of Epochs')
 
-sns.heatmap(errs_lstm, annot=True, cmap='Blues', cbar=True, square=True,
-            xticklabels=len_seqs, yticklabels=all_n_epochs, ax=ax1)
+# # save plot
+# plt.savefig('./Analysis/figs/smallgridsearch_lenght_epochs_lstm.pdf')
+# plt.show()
 
-sns.heatmap(errs_vanilla, annot=True, cmap='Blues', cbar=True, square=True,
-            xticklabels=len_seqs, yticklabels=all_n_epochs ,ax=ax2)
-# Add labels, title, and axis ticks
+# sns.heatmap(
+#     errs_vanilla,
+#     annot=True,
+#     fmt='.4g',
+#     cmap='Blues',
+#     cbar_kws={'label': 'Mean Squared Error'},
+#     xticklabels=len_seqs,
+#     yticklabels=all_n_epochs,
+# )
+# plt.xlabel('Sequence Length')
+# plt.ylabel('Number of Epochs')
+# plt.savefig('./Analysis/figs/smallgridsearch_lenght_epochs_vanilla.pdf')
+# plt.show()
 
-ax1.set_xlabel('n_epochs')
-ax2.set_xlabel('n_epochs')
-ax1.set_ylabel('len_seq')
-ax2.set_ylabel('len_seq')
-plt.title('Confusion Matrix')
+
+# # make two axis to plot the two sns heatmaps in one
+# fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+# sns.heatmap(
+#     errs_lstm,
+#     annot=True,
+#     fmt='.4g',
+#     cmap='Blues',
+#     cbar_kws={'label': 'Mean Squared Error'},
+#     xticklabels=len_seqs,
+#     yticklabels=all_n_epochs,
+#     ax=ax1,
+# )
+# sns.heatmap(
+#     errs_vanilla,
+#     annot=True,
+#     fmt='.4g',
+#     cmap='Blues',
+#     cbar_kws={'label': 'Mean Squared Error'},
+#     xticklabels=len_seqs,
+#     yticklabels=all_n_epochs,
+#     ax=ax2,
+# )
+
+# # axis labels
+# ax1.set_xlabel('Sequence Length')
+# ax1.set_ylabel('Number of Epochs')
+# ax2.set_xlabel('Sequence Length')
+# ax2.set_ylabel('Number of Epochs')
+# plt.savefig('./Analysis/figs/smallgridsearch_lenght_epochs_vanillalstm.pdf')
+
+# plt.show()
+
+
+optimizer = (
+    optimizers.legacy.Adam()
+)   # tf warning says it slows down on m1 and m2
+sequenced_test_targets, pred_lstm, pred_vanilla = lorenz_pred(
+    optimizer, 2
+)   # this is correct in comparision to before
+plot_results(sequenced_test_targets, pred_lstm, pred_vanilla, 2, 0.001)
+
+
+print("ERRORS LSTM VANILLA", eval(sequenced_test_targets, pred_lstm, pred_vanilla))
+
+
+
+####
+# Extract x, y, z coordinates from predicted sequence
+pred_x_lstm = pred_lstm[:, 0]
+pred_y_lstm = pred_lstm[:, 1]
+pred_z_lstm = pred_lstm[:, 2]
+
+pred_x_vanilla = pred_vanilla[:, 0]
+pred_y_vanilla= pred_vanilla[:, 1]
+pred_z_vanilla = pred_vanilla[:, 2]
+
+# print average errors for each model, relative to the test data
+print("LSTM average error: ", np.mean(np.abs(pred_lstm - sequenced_test_targets[test_indx])))
+print("pred_vanilla average error: ", np.mean(np.abs(pred_vanilla - sequenced_test_targets[test_indx])))
+
+# Extract x, y, z coordinates from test data
+test_x = sequenced_test_targets[test_indx][:, 0]
+test_y = sequenced_test_targets[test_indx][:, 1]
+test_z = sequenced_test_targets[test_indx][:, 2]
+
+
+# make a graphs that plots the coordinates prediction versus actual per epoch in the same plot
+#get colors from the pallet pastel in order
+colors = sns.color_palette("pastel", 6)
+
+errors_x_vanilla = np.abs(pred_x_vanilla - test_x)
+errors_y_vanilla = np.abs(pred_y_vanilla - test_y)
+errors_z_vanilla = np.abs(pred_z_vanilla - test_z)
+total_vanilla = errors_x_vanilla + errors_y_vanilla + errors_z_vanilla
+
+errors_x_LSTM = np.abs(pred_x_lstm - test_x)
+errors_y_LSTM = np.abs(pred_y_lstm - test_y)
+errors_z_LSTM = np.abs(pred_z_lstm - test_z)
+total_lstm = errors_x_LSTM + errors_y_LSTM + errors_z_LSTM
+
+# plot the total errors
+plt.plot(total_vanilla, label='vanilla', color=colors[0])
+plt.plot(total_lstm, label='LSTM', color=colors[1])
+plt.xlabel('t')
+plt.ylabel('$\sum_i |x_i^{(t)} - \hat{x_i}^{(t)}|$')
+plt.legend()
+
+plt.savefig('./Analysis/figs/lorenz_rnn_lstm_vanilla_coordinates_errors.pdf')
 plt.show()
