@@ -43,7 +43,7 @@ with RNN with physics informed:
 ```sh
 python3 lorenz_rnn_PI.py
 ```
-(optional FFNN:
+(optional) FFNN:
 ```sh
 python3 lorenz_FFN.py
 ```
