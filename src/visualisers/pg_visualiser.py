@@ -1,104 +1,117 @@
-import pygame
+# visualisation of csvs
+
+# TODO: write a function called: pg_visualise()
+# TODO: read csvs as a data frame, depending on the input: cols_of_interest, visualise the columns of interest
+
 import pandas as pd
 import numpy as np
+import pygame
+from sklearn.preprocessing import MinMaxScaler
+import pygame.freetype
+import sys
 
-def py_visualiser(test_steps, len_seq=2, dataset=None, filename=None, seq_pos=None, indx=8,):
-    # TODO: 
-# Set up Pygame
+def read_csv(filename, particle=None, cols=None):
+    # Load data from csv file
+    df = pd.read_csv(filename)
+
+    # Remove spaces from column names
+    df.rename(columns=lambda x: x.replace(' ', ''), inplace=True)
+
+    # If cols is not specified, use all columns
+    if cols is None:
+        cols = df.columns
+
+    # Select rows where particle column equals given particle
+    if particle is not None:
+        df = df[df['particle'] == particle]
+
+    # Select columns of interest
+    df = df[cols]
+
+    # Scale and normalize the data
+    scaler = MinMaxScaler()
+    print(df.shape)
+    scaled_data = scaler.fit_transform(df)
+
+    # Convert to numpy arrays
+    x, y = scaled_data[:, 0], scaled_data[:, 1]
+
+    return x, y, scaler
+
+
+def pg_visualiser(filename, particle, cols=None, predicted_x=None, predicted_y=None, steps=100):
+    # Call read_csv and get the x, y and scaler
+    x, y, scaler = read_csv(filename, particle, cols)
+
+    # Define the predicted points
+    predicted = None
+    if predicted_x is not None and predicted_y is not None:
+        # Rescale the predicted values using the scaler
+        predicted = np.array([predicted_x, predicted_y])
+        predicted = scaler.transform(predicted.reshape(-1, 2))  # change here
+
+    # Initiate the pygame
     pygame.init()
-    clock = pygame.time.Clock()
 
-    has_pred = True
-    if seq_pos is None:
-        has_pred = False
+    # Get the screen size
+    infoObject = pygame.display.Info()
+    screen = pygame.display.set_mode((infoObject.current_w, infoObject.current_h))
 
-    # Set up the display
-    width, height = 800, 800
-    screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption('Lorenz Attractor Numerical vs RNN Animation')
+    # Define a button
+    button = pygame.Rect(0, 0, 60, 30)
 
-    # Read CSV file 'src/csvs/lorenz.csv'
-    if filename:
-        filename = "src/csvs/lorenz.csv"
-        dataset = pd.read_csv(filename)
-        dataset.columns = dataset.columns.str.replace(' ', '')
-        data = dataset[dataset['particle'] == indx]
-    elif dataset is not None:
-        data = dataset[dataset['particle'] == indx]
-    else:
-        raise Exception("No values!")
+    # Draw circles for the points
+    old_points_xy = []
+    old_points_predicted = []
 
+    # Calculate the scale factor to keep points within 90% of the screen
+    scale_factor = 0.8
 
-    t_test = data['t']
-    # x_test = data['x']
-    # y_test = data['y']
-    # z_test = data['z']
-
-    
-
-    xy_t = data[['x','y']]
-    
-
-    # Set up animation parameters
-    t_min = t_test.min()  # Minimum time value
-    t_max = t_test.max()  # Maximum time value 
-
-    # Scaling factor for points
-    scale_factor = 400
-
-    test_points = []
-    scaled_xy_t = xy_t * scale_factor + width // 2
-    
-    if has_pred:
-        xy_pred = seq_pos[:, :2]
-        pred_points = []
-        scaled_xy_pred = xy_pred * scale_factor + width // 2
-
-    # Animation loop
-    for frame in range(test_steps):
-        # Clear the screen
-        screen.fill((0, 0, 0))
-
-        # Get the x, y, z, and t values for the current frame
-        t = t_test.iloc[frame]
-
-        # Normalize the time value
-        normalized_t = (t - t_min) / (t_max - t_min)
-
-        colour_tests = []
-        colour_preds = []
-        # Compute the color based on the normalized time value
-        colour_test = 160, 100, int(normalized_t * 255) % 255
-        colour_pred = 0, 100, int(normalized_t * 255) % 255 
-
-        # Add the current point to the list
-        # test_points.append((pos_x, pos_y, color_test))
-
-        test_point = np.array(scaled_xy_t.iloc[frame+len_seq]-np.array([300,300]))
-        
-        test_points.append(test_point)
-
-        if has_pred:
-            pred_point = np.array(scaled_xy_pred[frame]-np.array([300,300]))
-            pred_points.append(pred_point)
-
-            
-        # Draw all the points on the screen
-        for i in range(len(test_points)):
-            pygame.draw.circle(screen, colour_test, test_points[i], 2)
-            if has_pred:
-                pygame.draw.circle(screen, colour_pred, pred_points[i], 2)
-
-        # Update the display
-        pygame.display.flip()
-
-        # Limit the frame rate
-        clock.tick(60)
-
-        # Handle events
+    # Loop for the visualisation
+    running = True
+    for step in range(steps):
+        pygame.time.delay(10)  # Add a delay of 0.01 seconds
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if button.collidepoint(event.pos):
+                    running = False
+
+        # Make background black
+        screen.fill((0, 0, 0))
+
+        # Draw older points in increasingly lighter colors
+        for i, point_xy in enumerate(old_points_xy):
+            color = 255 - (i / len(old_points_xy) * 255)
+            pygame.draw.circle(screen, (0, color, color), point_xy, 5)
+            if predicted is not None:
+                pygame.draw.circle(screen, (150, color, color), old_points_predicted[i], 5)
+
+        # Draw new points in white and add to old points list
+        point_xy = (int((x[step]*scale_factor + (1 - scale_factor) / 2) * infoObject.current_w), int((y[step]*scale_factor + (1 - scale_factor) / 2) * infoObject.current_h))
+        old_points_xy.append(point_xy)
+        pygame.draw.circle(screen, (0, 255, 255), point_xy, 5)
+        if predicted is not None:
+            point_predicted = (int((predicted[step, 0]*scale_factor + (1 - scale_factor) / 2) * infoObject.current_w), int((predicted[step, 1]*scale_factor + (1 - scale_factor) / 2) * infoObject.current_h))
+            old_points_predicted.append(point_predicted)
+            pygame.draw.circle(screen, (255, 255, 255), point_predicted, 5)
+
+        # Draw the button in white
+        pygame.draw.rect(screen, [255, 255, 255], button)
+
+        pygame.display.flip()
+
+    # Quit pygame
+    pygame.quit()
+    sys.exit()
 
 
-# py_visualiser()
+# test
+if __name__ == "__main__":
+    filename = "advancedmachinelearning/src/csvs/lorenz.csv"
+    indx = 9
+    steps = 300
+    test = np.random.rand(steps)
+    cols = ['x', 'y']
+    pg_visualiser(filename, indx, cols, test, test, steps)
