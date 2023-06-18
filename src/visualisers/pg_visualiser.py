@@ -9,6 +9,7 @@ import pygame
 from sklearn.preprocessing import MinMaxScaler
 import pygame.freetype
 import sys
+import lorenz_rnn
 
 def read_csv(filename, particle=None, cols=None):
     # Load data from csv file
@@ -39,7 +40,7 @@ def read_csv(filename, particle=None, cols=None):
     return x, y, scaler
 
 
-def pg_visualiser(filename, particle, cols=None, predicted_x=None, predicted_y=None, steps=100):
+def visualiser(filename, particle, cols=None, predicted_x=None, predicted_y=None, steps=100):
     # Call read_csv and get the x, y and scaler
     x, y, scaler = read_csv(filename, particle, cols)
 
@@ -65,7 +66,7 @@ def pg_visualiser(filename, particle, cols=None, predicted_x=None, predicted_y=N
     old_points_predicted = []
 
     # Calculate the scale factor to keep points within 90% of the screen
-    scale_factor = 0.8
+    scale_factor = 0.7
 
     # Loop for the visualisation
     running = True
@@ -81,21 +82,22 @@ def pg_visualiser(filename, particle, cols=None, predicted_x=None, predicted_y=N
         # Make background black
         screen.fill((0, 0, 0))
 
+        radius = 3
         # Draw older points in increasingly lighter colors
         for i, point_xy in enumerate(old_points_xy):
-            color = 255 - (i / len(old_points_xy) * 255)
-            pygame.draw.circle(screen, (0, color, color), point_xy, 5)
+            color = (i / len(old_points_xy) * 255)
+            pygame.draw.circle(screen, (0, color, color), point_xy, radius)
             if predicted is not None:
-                pygame.draw.circle(screen, (150, color, color), old_points_predicted[i], 5)
+                pygame.draw.circle(screen, (150, color, color), old_points_predicted[i], radius)
 
         # Draw new points in white and add to old points list
         point_xy = (int((x[step]*scale_factor + (1 - scale_factor) / 2) * infoObject.current_w), int((y[step]*scale_factor + (1 - scale_factor) / 2) * infoObject.current_h))
         old_points_xy.append(point_xy)
-        pygame.draw.circle(screen, (0, 255, 255), point_xy, 5)
+        pygame.draw.circle(screen, (0, 255, 255), point_xy, radius)
         if predicted is not None:
             point_predicted = (int((predicted[step, 0]*scale_factor + (1 - scale_factor) / 2) * infoObject.current_w), int((predicted[step, 1]*scale_factor + (1 - scale_factor) / 2) * infoObject.current_h))
             old_points_predicted.append(point_predicted)
-            pygame.draw.circle(screen, (255, 255, 255), point_predicted, 5)
+            pygame.draw.circle(screen, (255, 255, 255), point_predicted, radius)
 
         # Draw the button in white
         pygame.draw.rect(screen, [255, 255, 255], button)
@@ -109,9 +111,13 @@ def pg_visualiser(filename, particle, cols=None, predicted_x=None, predicted_y=N
 
 # test
 if __name__ == "__main__":
-    filename = "advancedmachinelearning/src/csvs/lorenz.csv"
-    indx = 9
-    steps = 300
-    test = np.random.rand(steps)
+
+    # No prediction
+    filename = "csvs/lorenz.csv"
+    indx = 0
+    steps = 800
+    test = np.zeros(steps)
     cols = ['x', 'y']
-    pg_visualiser(filename, indx, cols, test, test, steps)
+    visualiser(filename, indx, cols, test, test, steps)
+
+    

@@ -13,7 +13,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 
 # import pygame as pg
-from visualisers.pg_visualiser import pg_visualiser
+from visualisers.pg_visualiser import visualiser
 
 train_size = 0.8
 n_epochs = 500
@@ -281,59 +281,61 @@ def plot_results(
 # plt.show()
 
 
-optimizer = (
-    optimizers.legacy.Adam()
-)   # tf warning says it slows down on m1 and m2
-sequenced_test_targets, pred_lstm, pred_vanilla = lorenz_pred(
-    optimizer, 2
-)   # this is correct in comparision to before
-plot_results(sequenced_test_targets, pred_lstm, pred_vanilla, 2, 0.001)
+
+if __name__ == '__main__':
+    optimizer = (
+        optimizers.legacy.Adam()
+    )   # tf warning says it slows down on m1 and m2
+    sequenced_test_targets, pred_lstm, pred_vanilla = lorenz_pred(
+        optimizer, 2
+    )   # this is correct in comparision to before
+    plot_results(sequenced_test_targets, pred_lstm, pred_vanilla, 2, 0.001)
 
 
-print("ERRORS LSTM VANILLA", eval(sequenced_test_targets, pred_lstm, pred_vanilla))
+    print("ERRORS LSTM VANILLA", eval(sequenced_test_targets, pred_lstm, pred_vanilla))
 
 
 
-####
-# Extract x, y, z coordinates from predicted sequence
-pred_x_lstm = pred_lstm[:, 0]
-pred_y_lstm = pred_lstm[:, 1]
-pred_z_lstm = pred_lstm[:, 2]
+    ####
+    # Extract x, y, z coordinates from predicted sequence
+    pred_x_lstm = pred_lstm[:, 0]
+    pred_y_lstm = pred_lstm[:, 1]
+    pred_z_lstm = pred_lstm[:, 2]
 
-pred_x_vanilla = pred_vanilla[:, 0]
-pred_y_vanilla= pred_vanilla[:, 1]
-pred_z_vanilla = pred_vanilla[:, 2]
+    pred_x_vanilla = pred_vanilla[:, 0]
+    pred_y_vanilla= pred_vanilla[:, 1]
+    pred_z_vanilla = pred_vanilla[:, 2]
 
-# print average errors for each model, relative to the test data
-print("LSTM average error: ", np.mean(np.abs(pred_lstm - sequenced_test_targets[test_indx])))
-print("pred_vanilla average error: ", np.mean(np.abs(pred_vanilla - sequenced_test_targets[test_indx])))
+    # print average errors for each model, relative to the test data
+    print("LSTM average error: ", np.mean(np.abs(pred_lstm - sequenced_test_targets[test_indx])))
+    print("pred_vanilla average error: ", np.mean(np.abs(pred_vanilla - sequenced_test_targets[test_indx])))
 
-# Extract x, y, z coordinates from test data
-test_x = sequenced_test_targets[test_indx][:, 0]
-test_y = sequenced_test_targets[test_indx][:, 1]
-test_z = sequenced_test_targets[test_indx][:, 2]
+    # Extract x, y, z coordinates from test data
+    test_x = sequenced_test_targets[test_indx][:, 0]
+    test_y = sequenced_test_targets[test_indx][:, 1]
+    test_z = sequenced_test_targets[test_indx][:, 2]
 
 
-# make a graphs that plots the coordinates prediction versus actual per epoch in the same plot
-#get colors from the pallet pastel in order
-colors = sns.color_palette("pastel", 6)
+    # make a graphs that plots the coordinates prediction versus actual per epoch in the same plot
+    #get colors from the pallet pastel in order
+    colors = sns.color_palette("pastel", 6)
 
-errors_x_vanilla = np.abs(pred_x_vanilla - test_x)
-errors_y_vanilla = np.abs(pred_y_vanilla - test_y)
-errors_z_vanilla = np.abs(pred_z_vanilla - test_z)
-total_vanilla = errors_x_vanilla + errors_y_vanilla + errors_z_vanilla
+    errors_x_vanilla = np.abs(pred_x_vanilla - test_x)
+    errors_y_vanilla = np.abs(pred_y_vanilla - test_y)
+    errors_z_vanilla = np.abs(pred_z_vanilla - test_z)
+    total_vanilla = errors_x_vanilla + errors_y_vanilla + errors_z_vanilla
 
-errors_x_LSTM = np.abs(pred_x_lstm - test_x)
-errors_y_LSTM = np.abs(pred_y_lstm - test_y)
-errors_z_LSTM = np.abs(pred_z_lstm - test_z)
-total_lstm = errors_x_LSTM + errors_y_LSTM + errors_z_LSTM
+    errors_x_LSTM = np.abs(pred_x_lstm - test_x)
+    errors_y_LSTM = np.abs(pred_y_lstm - test_y)
+    errors_z_LSTM = np.abs(pred_z_lstm - test_z)
+    total_lstm = errors_x_LSTM + errors_y_LSTM + errors_z_LSTM
 
-# plot the total errors
-plt.plot(total_vanilla, label='vanilla', color=colors[0])
-plt.plot(total_lstm, label='LSTM', color=colors[1])
-plt.xlabel('t')
-plt.ylabel('$\sum_i |x_i^{(t)} - \hat{x_i}^{(t)}|$')
-plt.legend()
+    # plot the total errors
+    plt.plot(total_vanilla, label='vanilla', color=colors[0])
+    plt.plot(total_lstm, label='LSTM', color=colors[1])
+    plt.xlabel('t')
+    plt.ylabel('$\sum_i |x_i^{(t)} - \hat{x_i}^{(t)}|$')
+    plt.legend()
 
-plt.savefig('./Analysis/figs/lorenz_rnn_lstm_vanilla_coordinates_errors.pdf')
-plt.show()
+    plt.savefig('./Analysis/figs/lorenz_rnn_lstm_vanilla_coordinates_errors.pdf')
+    plt.show()

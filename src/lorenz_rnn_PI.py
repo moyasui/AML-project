@@ -14,7 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 
 # import pygame as pg
-from visualisers.pg_visualiser import pg_visualiser
+from visualisers.pg_visualiser import visualiser
 
 train_size = 0.8
 n_epochs = 10
