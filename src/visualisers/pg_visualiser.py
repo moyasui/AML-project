@@ -9,7 +9,6 @@ import pygame
 from sklearn.preprocessing import MinMaxScaler
 import pygame.freetype
 import sys
-import lorenz_rnn
 
 def read_csv(filename, particle=None, cols=None):
     # Load data from csv file
