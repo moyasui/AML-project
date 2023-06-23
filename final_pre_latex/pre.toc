@@ -1,0 +1,5 @@
+\beamer@sectionintoc {1}{The Problem}{3}{0}{1}
+\beamer@sectionintoc {2}{The (Proposed) Solutions}{6}{0}{2}
+\beamer@sectionintoc {3}{The Dataset}{11}{0}{3}
+\beamer@sectionintoc {4}{The Results}{17}{0}{4}
+\beamer@sectionintoc {5}{Conclusion}{32}{0}{5}

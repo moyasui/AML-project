@@ -1,0 +1,72 @@
+\section{Discussion}\label{discussion}
+
+\subsection{Regular FFNN}
+
+We start by addressing the results for the regular FFN.  Evidently, \figref{fig:ffn_lorenz3d} shows a sub-optimal prediction for the test trajectory, and both Figs. (\ref{fig:history_ffn}) and (\ref{fig:ffn_lorenz}) help explain why. While the loss of the testing set keeps arbitrarily improving, the validation loss worsens significantly after a very small number of epochs. This is the classical behavior of an overfitting network and goes to show that training on more epochs is not the way to improve performance in this case.
+
+Reinforcing the point above, \figref{fig:ffn_lorenz}, seems to indicate the default prediction of the network is simply the mean of the coordinates. This will clearly not be sufficient for good results, as the 3D trajectory seen in \figref{fig:ffn_lorenz3d} has a wide distribution among negative and positive coordinates. 
+
+\subsection{Regular RNN and LSTM}
+
+The far-from-desirable results of the previous section motivate the discussion of the afterward implemented methods. As expected, the introduction of the time dependency of the loop connections in the RNN was able to improve the predicted trajectories. This analysis needs not be intricate in terms of the assessed evaluation score. Indeed, Figs. (\ref{fig:ffn_lorenz}) and (\ref{fig:rnn_lorenz}) show unequivocally that the RNNs in general do a better job for this forecasting task.
+
+To compare the vanilla RNN implementation to the LSTM, we can start with the grid search of parameters for the prediction of the stable spiral trajectory. While the colormap scale can be deceiving, a closer look at Figs. (\ref{fig:hyperparams_vanilla_spiral}) and (\ref{fig:hyperparams_lstm_spiral}) show that the LSTM model was able to yield better predictions almost regardless of the number of epochs and length of look-back sequence. The superiority of the LSTM prediction is again confirmed in the trajectories of \figref{fig:rnn_spiral}. Here we should mention that the MSE of the order of $10^{-5}$ on one of the grid search configurations was considered a fluctuation: further investigations were unable to generate such a low MSE.
+
+When trying to optimize the model's training epochs and look-back length of the Lorenz attractor, we see that the comparison between the vanilla RNN and LSTM is not so simple. The grid searches of Figs. (\ref{fig:hyperparams_vanilla_lorenz}) and (\ref{fig:hyperparams_lstm_lorenz}) show that both the neural network's implementations are capable of obtaining MSE scores of the order of 0.02, but the MSE values for the vanilla implementation across the hyperparameters have much higher average and variance across the parameters. 
+
+This last analysis indicates that especially when comparing a wider range of parameters, the addition of a more robust set of memory units of the LSTM can benefit the model prediction on complex and, in this case, chaotic trajectories.
+
+Comparing the Lorenz test trajectories by eye against the predictions, as in \figref{fig:rnn_lorenz}, can be a non-trivial task. By breaking down the accumulated error of the coordinates as done in \figref{fig:rnn_coordinate_errors_lorenz}, we again confirm that, at least for those set of parameters, the LSTM gave overall better predictions of the test-set trajectory.
+
+\subsection{Discussing the hyperparameters}
+
+As we can see from the grid searches over the number of epochs, the performance of the network, in general, did not increase for reasonable-sized epochs, aligning with the aforementioned reasons. For most cases, the choice of 500 epochs was ideal, and values larger than that seemed to incur some detriment to the evaluation metric. 
+
+The choice of the look-back length plays an important role in learning the system dynamics and requires careful consideration. In the case of the stable system, a larger look-back is generally effective or does not harm the prediction. However, for chaotic and unstable systems, it is essential to keep this parameter reasonably small (even as small as 2 which our findings suggest to be sufficient). We suppose this is because the nature of chaotic and unstable dynamics inherently calls for a limited look-back.
+
+We opted not to optimize the look-ahead parameter in our model. The rationale behind this decision was that increasing the prediction range would bear similar outcomes to executing multiple consecutive prediction steps. 
+
+\subsection{Adding physics to the loss function}
+
+The comparison of the prediction of the LSTM network with the same network with an added physics-informed term can be done in \figref{fig:rnn_pi_lorenz}, but it is not the most informative. From this graph, both models seem to be performing equally well. A closer analysis, from \figref{fig:lorenz_rnn_lstm_lstmPI_coordinates_errors} shows, however, that the predictions of the model with the physics penalty are overall more accurate throughout the time evolution.
+
+An interesting point is that the model is not better in every time step of the series. This can indicate that the physics loss penalty is successfully guiding the network to learn the differential equations but doing so in a fair way. If the physics-informed network displayed lower MSE for every time step, it could indicate that our implementation was leaking information from the testing set, among other potential problems.
+
+An interesting observation can be made from \figref{fig:loghist_lorenz_LSTMPI_rnn} when the physics-informed loss is incorporated. Initially, it was anticipated that the PI loss would improve the LSTM's predictions on the test set compared to regular predictions. However, it was not necessarily expected to see an overall improvement in the training MSE throughout the training process.
+
+This outcome is surprising because even though the PI term assists with predictions, particularly for unseen data, it still adds a positive value to the loss term as indicated by \eqref{eq:custom_loss}. 
+We suspect the reason for this is that we have a noiseless data set, meaning the position and the velocities are completely correlated. Including the velocity is then equivalent to training the trajectories on more points, thus reinforcing the correct results and reducing the loss error. If the data set contains experimentally measured data, the position would not be completely correlated to its velocity computed using the right hand side of Equation~\eqref{eq:lorenz}. Improvement in the loss function might not be as visible throughout training in that case. We also argue that this is not physics-informed machine learning in a traditional sense since the velocity of the system is not a physical law but rather just the derivative of the positions. This observation raises the need for further investigation into our implementations.
+
+
+To summarize the comparison of the RNN models (vanilla, LSTM, and LSTM with PI loss), \tabref{tab:compare} shows that, for the correct set of parameters, our expectations on the models were satisfied. The MSE values for the vanilla implementation were outmatched by the LSTM which were in turn also worst than the same variation but with the PI term. The added complexity of each approach, in this case, was not in vain.
+
+
+
+\subsection{Discussing the data sets}
+
+Our intentions were to initially use the stable spiral trajectory as a benchmark for our network implementations. The task, however, proved to be harder than previously imagined. The obtained mean squared errors for the spiral were smaller than the ones obtained for the attractor, and that can be seen from the previously mentioned grid searches. Nonetheless, the predictions in \figref{fig:rnn_spiral}, confirm that even predicting a spiral can be challenging when only the initial position is given for a network trained on different trajectories.
+
+Regardless of the predictions of the spirals and attractors not being exactly in accordance with the test set, it is valid to note that the "shapes" of the trajectories are preserved in some loose sense. This serves as an indication that some information about the dynamics of the differential equations is indeed being learned. As will be discussed in the following subsection, it can be fruitful to train the networks in those types of time-independent properties of the system.
+
+
+\subsection{Additional considerations and comparison to literature}
+
+A point worth mentioning is the decision to not use any batching procedure in the optimization process. While adding stochasticity to network training is often beneficial, it should be done with caution in chaotic systems. In fact, the trajectory learned by the network is sensitive both to the initial condition and also the network's weights in an unpredictable way. Small updates to the weights will drastically influence the stability of the long-term predictions. Mini-batch training introduces noise into the gradient estimates due to the random selection of mini-batches so by using a gradient scheme based on batches, these effects would be detrimentally magnified during the training process.
+
+According to a more rigorous mathematical analysis of \cite{mikhaeil2022difficulty}, the challenge of training RNNs in chaotic dynamics cannot be overcome by the use of specific architecture designs, constraints, or regularizations. The theoretical results presented argue that the back-propagated gradients of the loss function will invariably explode, and it becomes necessary to limit the gradients in an optimal manner. One of the strategies is to use what is called \emph{sparse teacher forcing}, which could be a topic for future investigation. The idea behind this method is to build up on concepts from dynamical control theory and combine the power of observed data with the RNN's internal states, promoting effective learning of complex sequential patterns.
+
+To further explain the suboptimal results for the RNN predictions, we delve some more into the available literature. When learning and reconstructing dynamical systems, especially nonlinear ones, the works done in \cite{koppe2019identifying}\cite{wood2010statistical} show that evaluating and optimizing in "ahead-prediction" errors is not meaningful for chaotic time-series. A more modern and fruitful approach is to reproduce invariant or time-independent properties of the system such as the Kullback-Leibler divergence as done in \cite{mikhaeil2022difficulty}. To add to the complexity of the approach, they also used the so-called dimension-wise Hellinger distance which is a measure of temporal agreement of the observed and generated time series done in their power spectra of the Jacobian.
+
+While the results here contained displayed inferior results when compared to those mentioned above, they stand out in their simplicity. Some representation and underlying dynamics of the attractor are effectively being reconstructed, even if the exact trajectories cannot be predicted. One potential area for enhancement could involve the use of techniques such as autoencoders,  known for their capacity to extract useful features. 
+
+Finally, it is important to remember that our intent was not to devise a method to perfectly predict chaotic systems but rather to study the capacity of different neural networks in learning and reproducing dynamical systems. While the exact trajectories were not precisely predicted, the neural networks did in any rate learnt some underlying dynamics and recreated the attractor shapes, which is a significant finding in itself.
+
+
+
+
+
+
+
+
+
+

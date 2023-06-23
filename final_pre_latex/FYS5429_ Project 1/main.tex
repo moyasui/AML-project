@@ -1,0 +1,81 @@
+\documentclass[a4paper, amsfonts, amssymb, amsmath, reprint, showkeys, nofootinbib, twoside, floatfix]{revtex4-2}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{bm} % for bold math symbols
+\usepackage[colorinlistoftodos, color=green!40, prependcaption]{todonotes}
+\usepackage{booktabs}
+\usepackage{comment}
+\usetikzlibrary{positioning,chains}
+\usepackage{tikz}
+\usepackage{lipsum,adjustbox}
+\usepackage{empheq} 
+\usetikzlibrary{shapes,arrows,positioning}
+\usetikzlibrary{fit, arrows.meta, shapes}
+\usetikzlibrary{external}
+\tikzexternalize % activate!
+\newcommand{\subsubsubsection}[1]{\paragraph{#1}\mbox{}\\}
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+
+\input{preamble}
+\mathtoolsset{showonlyrefs=false} 
+\usepackage{xcolor}
+\usepackage{hyperref} % For hyperlinks in the PDF
+%\setlength{\marginparwidth}{2.5cm}
+\bibliographystyle{apsrev4-1}
+%\bibliographystyle{apalike}
+\usepackage{tikz}
+\usetikzlibrary{quantikz}
+% defines the color of hyperref objects
+% Blending two colors:  blue!80!black  =  .8 blue and 0.2 black       % automagic cross-referencing
+\hypersetup{ % this is just my personal choice, feel free to change things
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}}
+
+\usepackage{listings}
+\lstset{language=C, keywordstyle={\bfseries \color{blue}}}
+
+\bibliographystyle{apsrev4-1}
+\begin{document}
+\include{amsmath}
+
+\title{Learning chaotic dynamics with RNNs}
+\email[]{https://github.com/Daniel-Haas-B/AdvancedMachineLearning}
+\author{Daniel Haas}
+\author{Keran Chen}
+\affiliation{University of Oslo, Department of Physics}
+\date{\today} % Leave empty to omit a date
+
+\newcommand{\kc}[1]{\textcolor{green}{#1 $\mathcal{K}$}}
+\newcommand{\dan}[1]{\textcolor{red}{#1 $\mathcal{D}$}}
+\renewcommand{\eqref}[1]{Eq. (\ref{#1})}
+\newcommand{\tabref}[1]{Tab. (\ref{#1})}
+\newcommand{\figref}[1]{Fig. (\ref{#1})}
+
+
+\begin{abstract}
+% Motivation
+ In this study, we delve into the challenge of predicting the dynamics of differential equations by leveraging the power of recurrent neural networks (RNNs). Our primary objective is to investigate how to employ different types of RNNs in dynamic systems while also assessing their performance in two distinct systems - one stable and one chaotic. We show that regular feed-forward neural networks (FFNNs) have difficulty in capturing the time dependency of the temporal data. We then show that RNNs can be used to get results from this time-series analysis, essentially by learning the dynamics of systems. For that, we train the network in different trajectories of Lorenz attractor simulations with different initial conditions.  We experiment with some hyperparameter tuning and show that using LSTM can yield better results than the standard RNN. We further motivate the introduction of physically informed loss functions to embed physical constraints to the neural network. Illustrating the difficulty of predicting chaotic dynamics, we also benchmark our methods by predicting stable spiral trajectories.
+\end{abstract}
+
+%\keywords{Ising Model, Feed-Forward Neural Network, Convolutional Neural Network}
+
+\maketitle
+
+\twocolumngrid
+\input{sections/section01.tex}  
+\input{sections/section02.tex}
+\input{sections/section03.tex}
+\input{sections/section04.tex}
+\input{sections/section05.tex}
+
+
+\onecolumngrid
+
+\bibliography{ref}
+
+%\input{sections/appendix.tex}
+
+\end{document}
